@@ -1,0 +1,2 @@
+include ':app', ':zlamemp3lib'
+rootProject.name='ZLameMp3'
