@@ -1,25 +1,25 @@
 #include <string>
-#include "stdio.h"
+#include <cstdio>
 #include "jni.h"
 #include "libmp3lame/lame.h"
 #include "android/log.h"
 
 #define BUFFER_SIZE 8192
 
-static lame_global_flags *lame = NULL;
+static lame_global_flags *lame = nullptr;
 long nowConvertBytes = 0;
 
 void resetLame() {
-    if (lame != NULL) {
+    if (lame != nullptr) {
         lame_close(lame);
-        lame = NULL;
+        lame = nullptr;
     }
 }
 
 unsigned char *convertJByteArrayToChars(JNIEnv *env, jbyteArray bytearray) {
-    unsigned char *chars = NULL;
+    unsigned char *chars = nullptr;
     jbyte *bytes;
-    bytes = env->GetByteArrayElements(bytearray, 0);
+    bytes = env->GetByteArrayElements(bytearray, nullptr);
     int chars_len = env->GetArrayLength(bytearray);
     chars = new unsigned char[chars_len + 1];
     memset(chars, 0, chars_len + 1);
@@ -62,8 +62,8 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_cc_ibooker_android_zlamemp3lib_Mp3Converter_convertMp3(JNIEnv *env, jclass clazz,
                                                             jstring input_path, jstring mp3_path) {
-    const char *cInput = env->GetStringUTFChars(input_path, 0);
-    const char *cMp3 = env->GetStringUTFChars(mp3_path, 0);
+    const char *cInput = env->GetStringUTFChars(input_path, nullptr);
+    const char *cMp3 = env->GetStringUTFChars(mp3_path, nullptr);
     //open input file and output file
     FILE *fInput = fopen(cInput, "rb");
     FILE *fMp3 = fopen(cMp3, "wb");
@@ -74,7 +74,7 @@ Java_cc_ibooker_android_zlamemp3lib_Mp3Converter_convertMp3(JNIEnv *env, jclass 
     long total = 0; // the bytes of reading input file
     nowConvertBytes = 0;
     //if you don't init lame, it will init lame use the default value
-    if (lame == NULL) {
+    if (lame == nullptr) {
         lameInit(44100, 2, 0, 44100, 96, 7);
     }
 
@@ -109,8 +109,8 @@ Java_cc_ibooker_android_zlamemp3lib_Mp3Converter_encode(JNIEnv *env, jclass claz
                                                         jshortArray buffer_left,
                                                         jshortArray buffer_right, jint samples,
                                                         jbyteArray mp3buf) {
-    jshort *j_buffer_l = env->GetShortArrayElements(buffer_left, NULL);
-    jshort *j_buffer_r = env->GetShortArrayElements(buffer_right, NULL);
+    jshort *j_buffer_l = env->GetShortArrayElements(buffer_left, nullptr);
+    jshort *j_buffer_r = env->GetShortArrayElements(buffer_right, nullptr);
 
     const jsize mp3buf_size = env->GetArrayLength(mp3buf);
     unsigned char *c_mp3buf = convertJByteArrayToChars(env, mp3buf);
@@ -119,7 +119,7 @@ Java_cc_ibooker_android_zlamemp3lib_Mp3Converter_encode(JNIEnv *env, jclass claz
 
     env->ReleaseShortArrayElements(buffer_left, j_buffer_l, 0);
     env->ReleaseShortArrayElements(buffer_right, j_buffer_r, 0);
-    *c_mp3buf = NULL;
+    *c_mp3buf = '\0';
     return result;
 }
 
@@ -132,7 +132,7 @@ Java_cc_ibooker_android_zlamemp3lib_Mp3Converter_flush(JNIEnv *env, jclass clazz
 
     int result = lame_encode_flush(lame, c_mp3buf, mp3buf_size);
 
-    *c_mp3buf = NULL;
+    *c_mp3buf = '\0';
     return result;
 }
 
@@ -140,7 +140,7 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_cc_ibooker_android_zlamemp3lib_Mp3Converter_close(JNIEnv *env, jclass clazz) {
     lame_close(lame);
-    lame = NULL;
+    lame = nullptr;
 }
 
 extern "C"
