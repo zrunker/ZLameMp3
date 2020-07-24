@@ -4,6 +4,7 @@
 #include "libmp3lame/lame.h"
 #include "android/log.h"
 
+#define INBUFSIZE 4096
 // 7200 + 4096 * 1.25
 #define BUFFER_SIZE 12320
 
@@ -51,7 +52,7 @@ void lameInit(jint inSampleRate,
 }
 
 void convert(JNIEnv *env,
-             jstring input_path, jstring mp3_path, jint inSampleRate) {
+             jstring input_path, jstring mp3_path, jint inSampleRate, jint channels) {
     const char *cInput = env->GetStringUTFChars(input_path, nullptr);
     const char *cMp3 = env->GetStringUTFChars(mp3_path, nullptr);
     //open input file and output file
@@ -59,7 +60,7 @@ void convert(JNIEnv *env,
     // 去掉文件头信息
     fseek(fInput, 4 * 1024, SEEK_CUR);
     FILE *fMp3 = fopen(cMp3, "wb");
-    short int inputBuffer[BUFFER_SIZE * 2];
+    short int inputBuffer[INBUFSIZE * channels];
     unsigned char mp3Buffer[BUFFER_SIZE];//You must specified at least 7200
     int read = 0; // number of bytes in inputBuffer, if in the end return 0
     int write = 0;// number of bytes output in mp3buffer.  can be 0
@@ -67,17 +68,26 @@ void convert(JNIEnv *env,
     nowConvertBytes = 0;
     //if you don't init lame, it will init lame use the default value
     if (lame == nullptr) {
-        lameInit(inSampleRate, 2, 0, 44100, 96, 7);
+        lameInit(inSampleRate, channels, 0, 44100, 96, 7);
     }
 
     //convert to mp3
     do {
-        read = static_cast<int>(fread(inputBuffer, sizeof(short int) * 2, BUFFER_SIZE, fInput));
-        total += read * sizeof(short int) * 2;
+        read = static_cast<int>(fread(inputBuffer, sizeof(short int) * channels, INBUFSIZE,
+                                      fInput));
+        total += read * sizeof(short int) * channels;
         nowConvertBytes = total;
         if (read != 0) {
-            write = lame_encode_buffer_interleaved(lame, inputBuffer, read, mp3Buffer, BUFFER_SIZE);
-            //write the converted buffer to the file
+            if (channels == 2) {
+                // 立体声用此方法编码
+                write = lame_encode_buffer_interleaved(lame, inputBuffer, read, mp3Buffer,
+                                                       BUFFER_SIZE);
+            } else if (channels == 1) {
+                // 单声道
+                write = lame_encode_buffer(lame, inputBuffer, inputBuffer, read, mp3Buffer,
+                                           BUFFER_SIZE);
+            }
+            // write the converted buffer to the file
             fwrite(mp3Buffer, sizeof(unsigned char), static_cast<size_t>(write), fMp3);
         }
         //if in the end flush
@@ -109,8 +119,8 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_cc_ibooker_android_zlamemp3lib_Mp3Converter_convertMp3(JNIEnv *env, jclass clazz,
                                                             jstring input_path, jstring mp3_path,
-                                                            jint inSampleRate) {
-    convert(env, input_path, mp3_path, inSampleRate);
+                                                            jint inSampleRate, jint channels) {
+    convert(env, input_path, mp3_path, inSampleRate, channels);
 }
 
 extern "C"
@@ -170,5 +180,5 @@ JNIEXPORT void JNICALL
 Java_cc_ibooker_android_zlamemp3lib_Mp3Converter_wavConvertMp3(JNIEnv *env, jclass clazz,
                                                                jstring input_path,
                                                                jstring mp3_path) {
-    convert(env, input_path, mp3_path, 44100);
+    convert(env, input_path, mp3_path, 44100, 2);
 }

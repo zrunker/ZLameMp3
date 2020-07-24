@@ -36,7 +36,7 @@ public class Mp3Converter {
      * @param mp3Path      mp3 output file path
      * @param inSampleRate input sample rate in Hz
      */
-    public native static void convertMp3(String inputPath, String mp3Path, int inSampleRate);
+    public native static void convertMp3(String inputPath, String mp3Path, int inSampleRate, int channels);
 
     /**
      * file convert to mp3
