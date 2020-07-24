@@ -4,7 +4,8 @@
 #include "libmp3lame/lame.h"
 #include "android/log.h"
 
-#define BUFFER_SIZE 8192
+// 7200 + 1024 * 1.25
+#define BUFFER_SIZE 8480
 
 static lame_global_flags *lame = nullptr;
 long nowConvertBytes = 0;
