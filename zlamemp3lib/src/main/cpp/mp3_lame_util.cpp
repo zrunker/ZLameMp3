@@ -79,7 +79,7 @@ void convert(JNIEnv *env,
         nowConvertBytes = total;
         if (read != 0) {
             if (channels == 2) {
-                // 立体声用此方法编码
+                // 立体声
                 write = lame_encode_buffer_interleaved(lame, inputBuffer, read, mp3Buffer,
                                                        BUFFER_SIZE);
             } else if (channels == 1) {
