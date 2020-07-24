@@ -4,8 +4,8 @@
 #include "libmp3lame/lame.h"
 #include "android/log.h"
 
-// 7200 + 1024 * 1.25
-#define BUFFER_SIZE 8480
+// 7200 + 4096 * 1.25
+#define BUFFER_SIZE 12320
 
 static lame_global_flags *lame = nullptr;
 long nowConvertBytes = 0;
@@ -86,6 +86,7 @@ void convert(JNIEnv *env,
         }
     } while (read != 0);
 
+    lame_mp3_tags_fid(lame, fMp3);
     //release resources
     resetLame();
     fclose(fInput);
