@@ -60,7 +60,7 @@ void convert(JNIEnv *env,
     // 去掉文件头信息
     fseek(fInput, 4 * 1024, SEEK_CUR);
     FILE *fMp3 = fopen(cMp3, "wb");
-    short int inputBuffer[INBUFSIZE * channels];
+    short int inputBuffer[BUFFER_SIZE * channels];
     unsigned char mp3Buffer[BUFFER_SIZE];//You must specified at least 7200
     int read = 0; // number of bytes in inputBuffer, if in the end return 0
     int write = 0;// number of bytes output in mp3buffer.  can be 0
@@ -73,7 +73,7 @@ void convert(JNIEnv *env,
 
     //convert to mp3
     do {
-        read = static_cast<int>(fread(inputBuffer, sizeof(short int) * channels, INBUFSIZE,
+        read = static_cast<int>(fread(inputBuffer, sizeof(short int) * channels, BUFFER_SIZE,
                                       fInput));
         total += read * sizeof(short int) * channels;
         nowConvertBytes = total;
