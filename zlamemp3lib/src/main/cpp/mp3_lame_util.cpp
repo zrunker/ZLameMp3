@@ -4,9 +4,8 @@
 #include "libmp3lame/lame.h"
 #include "android/log.h"
 
-#define INBUFSIZE 4096
-// 7200 + 4096 * 1.25
-#define BUFFER_SIZE 12320
+// 7200 + 1024 * 1.25
+#define BUFFER_SIZE 8480
 
 static lame_global_flags *lame = nullptr;
 long nowConvertBytes = 0;
@@ -53,6 +52,11 @@ void lameInit(jint inSampleRate,
 
 void convert(JNIEnv *env,
              jstring input_path, jstring mp3_path, jint inSampleRate, jint channels) {
+    if (channels >= 2) {
+        channels = 2;
+    } else {
+        channels = 1;
+    }
     const char *cInput = env->GetStringUTFChars(input_path, nullptr);
     const char *cMp3 = env->GetStringUTFChars(mp3_path, nullptr);
     //open input file and output file
@@ -79,15 +83,14 @@ void convert(JNIEnv *env,
         nowConvertBytes = total;
         if (read != 0) {
             if (channels == 2) {
-                // 立体声
                 write = lame_encode_buffer_interleaved(lame, inputBuffer, read, mp3Buffer,
-                                                       BUFFER_SIZE);
-            } else if (channels == 1) {
-                // 单声道
+                                                       BUFFER_SIZE);// 立体声
+            } else {
                 write = lame_encode_buffer(lame, inputBuffer, inputBuffer, read, mp3Buffer,
-                                           BUFFER_SIZE);
+                                           BUFFER_SIZE);// 单声道
             }
-            // write the converted buffer to the file
+
+            //write the converted buffer to the file
             fwrite(mp3Buffer, sizeof(unsigned char), static_cast<size_t>(write), fMp3);
         }
         //if in the end flush
