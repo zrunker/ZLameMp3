@@ -28,6 +28,15 @@ public class Mp3Converter {
     public native static void init(int inSampleRate, int channel, int mode,
                                    int outSampleRate, int outBitRate, int quality);
 
+    /**
+     * file convert to mp3
+     * it may cost a lot of time and better put it in a thread
+     *
+     * @param inputPath    file path to be converted
+     * @param mp3Path      mp3 output file path
+     * @param inSampleRate input sample rate in Hz
+     */
+    public native static void convertMp3(String inputPath, String mp3Path, int inSampleRate);
 
     /**
      * file convert to mp3
@@ -36,7 +45,7 @@ public class Mp3Converter {
      * @param inputPath file path to be converted
      * @param mp3Path   mp3 output file path
      */
-    public native static void convertMp3(String inputPath, String mp3Path);
+    public native static void wavConvertMp3(String inputPath, String mp3Path);
 
     /**
      * Encode buffer to mp3.

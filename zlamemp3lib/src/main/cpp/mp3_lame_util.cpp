@@ -49,25 +49,14 @@ void lameInit(jint inSampleRate,
     lame_init_params(lame);
 }
 
-extern "C"
-JNIEXPORT void JNICALL
-Java_cc_ibooker_android_zlamemp3lib_Mp3Converter_init(JNIEnv *env, jclass clazz,
-                                                      jint in_sample_rate, jint channel, jint mode,
-                                                      jint out_sample_rate, jint out_bit_rate,
-                                                      jint quality) {
-    lameInit(in_sample_rate, channel, mode, out_sample_rate, out_bit_rate, quality);
-}
-
-extern "C"
-JNIEXPORT void JNICALL
-Java_cc_ibooker_android_zlamemp3lib_Mp3Converter_convertMp3(JNIEnv *env, jclass clazz,
-                                                            jstring input_path, jstring mp3_path) {
+void convert(JNIEnv *env,
+             jstring input_path, jstring mp3_path, jint inSampleRate) {
     const char *cInput = env->GetStringUTFChars(input_path, nullptr);
     const char *cMp3 = env->GetStringUTFChars(mp3_path, nullptr);
     //open input file and output file
     FILE *fInput = fopen(cInput, "rb");
     // 去掉文件头信息
-    fseek(fInput, 4*1024, SEEK_CUR);
+    fseek(fInput, 4 * 1024, SEEK_CUR);
     FILE *fMp3 = fopen(cMp3, "wb");
     short int inputBuffer[BUFFER_SIZE * 2];
     unsigned char mp3Buffer[BUFFER_SIZE];//You must specified at least 7200
@@ -77,7 +66,7 @@ Java_cc_ibooker_android_zlamemp3lib_Mp3Converter_convertMp3(JNIEnv *env, jclass 
     nowConvertBytes = 0;
     //if you don't init lame, it will init lame use the default value
     if (lame == nullptr) {
-        lameInit(44100, 2, 0, 44100, 96, 7);
+        lameInit(inSampleRate, 2, 0, 44100, 96, 7);
     }
 
     //convert to mp3
@@ -103,6 +92,23 @@ Java_cc_ibooker_android_zlamemp3lib_Mp3Converter_convertMp3(JNIEnv *env, jclass 
     env->ReleaseStringUTFChars(input_path, cInput);
     env->ReleaseStringUTFChars(mp3_path, cMp3);
     nowConvertBytes = -1;
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_cc_ibooker_android_zlamemp3lib_Mp3Converter_init(JNIEnv *env, jclass clazz,
+                                                      jint in_sample_rate, jint channel, jint mode,
+                                                      jint out_sample_rate, jint out_bit_rate,
+                                                      jint quality) {
+    lameInit(in_sample_rate, channel, mode, out_sample_rate, out_bit_rate, quality);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_cc_ibooker_android_zlamemp3lib_Mp3Converter_convertMp3(JNIEnv *env, jclass clazz,
+                                                            jstring input_path, jstring mp3_path,
+                                                            jint inSampleRate) {
+    convert(env, input_path, mp3_path, inSampleRate);
 }
 
 extern "C"
@@ -155,4 +161,12 @@ extern "C"
 JNIEXPORT jstring JNICALL
 Java_cc_ibooker_android_zlamemp3lib_Mp3Converter_getLameVersion(JNIEnv *env, jclass clazz) {
     return env->NewStringUTF(get_lame_version());
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_cc_ibooker_android_zlamemp3lib_Mp3Converter_wavConvertMp3(JNIEnv *env, jclass clazz,
+                                                               jstring input_path,
+                                                               jstring mp3_path) {
+    convert(env, input_path, mp3_path, 44100);
 }
