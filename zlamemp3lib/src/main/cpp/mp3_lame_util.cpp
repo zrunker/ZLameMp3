@@ -23,8 +23,8 @@ unsigned char *convertJByteArrayToChars(JNIEnv *env, jbyteArray bytearray) {
     bytes = env->GetByteArrayElements(bytearray, nullptr);
     int chars_len = env->GetArrayLength(bytearray);
     chars = new unsigned char[chars_len + 1];
-    memset(chars, 0, chars_len + 1);
-    memcpy(chars, bytes, chars_len);
+    memset(chars, 0, static_cast<size_t>(chars_len + 1));
+    memcpy(chars, bytes, static_cast<size_t>(chars_len));
     chars[chars_len] = 0;
     env->ReleaseByteArrayElements(bytearray, bytes, 0);
     return chars;
